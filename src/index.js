@@ -10,19 +10,63 @@ app.use(cors());
 const users = [];
 
 function checksExistsUserAccount(request, response, next) {
-  // Complete aqui
+  const { username } = request.headers;
+
+  const user = users.find(x => x.username === username);
+
+  if (!user)
+    return response.status(404);
+
+  request.user = user;
+
+  return next();
 }
 
 function checksCreateTodosUserAvailability(request, response, next) {
-  // Complete aqui
+  const { user } = request;
+
+  if (user.pro === true || (user.pro === false && user.todos.length < 10)) {
+    request.user = user;
+    return next();
+  };
+
+  return response.status(403);
 }
 
 function checksTodoExists(request, response, next) {
-  // Complete aqui
+  const { id } = request.params;
+  const { username } = request.headers;
+
+  const user = users.find(x => x.username === username);
+
+  if (id.length < 36)
+    return response.status(400);
+
+  if (!user)
+    return response.status(404);
+
+  const todoIndex = user.todos.findIndex(x => x.id === id);
+
+  if (todoIndex === -1)
+    return response.status(404);
+
+  const todo = user.todos.find(x => x.id === id);
+
+  request.todo = todo;
+  request.user = user;
+  return next();
 }
 
 function findUserById(request, response, next) {
-  // Complete aqui
+  const { id } = request.params;
+
+  const user = users.find(x => x.id === id);
+
+  if (!user)
+    return response.status(404);
+
+  request.user = user;
+  return next();
 }
 
 app.post('/users', (request, response) => {
